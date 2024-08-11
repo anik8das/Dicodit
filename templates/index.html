@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dicodit - DICOM Header Modifier</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        form div {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        input[type="file"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        input[type="file"] {
+            padding: 10px 0;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dicodit</h1>
+        <form method="POST" enctype="multipart/form-data">
+            <div>
+                <label for="dicom_file">Select DICOM file:</label>
+                <input type="file" id="dicom_file" name="dicom_file" accept=".dcm" required>
+            </div>
+            <div>
+                <label for="header_code">Header code:</label>
+                <input type="text" id="header_code" name="header_code" placeholder="e.g., 0010,0010" required>
+            </div>
+            <div>
+                <label for="new_value">New value:</label>
+                <input type="text" id="new_value" name="new_value" placeholder="Enter new value" required>
+            </div>
+            <button type="submit">Modify DICOM</button>
+        </form>
+    </div>
+</body>
+</html>

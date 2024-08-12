@@ -1,15 +1,20 @@
 from flask import Flask, render_template, request, send_file
 import pydicom
 import io
+import os
 
 app = Flask(__name__)
 
-def modify_dicom(file, header_code, new_value):
+def modify_dicom(file, group, element, new_value):
     # Read the DICOM file
     ds = pydicom.dcmread(file)
     
+    # Convert group and element to integers
+    group = int(group, 16)
+    element = int(element, 16)
+    
     # Modify the specified header
-    ds[header_code].value = new_value
+    ds[group, element].value = new_value
     
     # Save the modified DICOM to a BytesIO object
     modified_file = io.BytesIO()
@@ -24,12 +29,13 @@ def index():
         # Get the uploaded file
         file = request.files['dicom_file']
         
-        # Get the header code and new value from the form
-        header_code = request.form['header_code']
+        # Get the header code (group and element) and new value from the form
+        group = request.form['header_group']
+        element = request.form['header_element']
         new_value = request.form['new_value']
         
         # Modify the DICOM file
-        modified_file = modify_dicom(file, header_code, new_value)
+        modified_file = modify_dicom(file, group, element, new_value)
         
         # Send the modified file back to the user
         return send_file(

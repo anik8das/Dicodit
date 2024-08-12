@@ -45,6 +45,13 @@
         input[type="file"] {
             padding: 10px 0;
         }
+        .header-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        .header-inputs input {
+            width: calc(50% - 5px);
+        }
         button {
             background-color: #3498db;
             color: white;
@@ -70,8 +77,11 @@
                 <input type="file" id="dicom_file" name="dicom_file" accept=".dcm" required>
             </div>
             <div>
-                <label for="header_code">Header code:</label>
-                <input type="text" id="header_code" name="header_code" placeholder="e.g., 0010,0010" required>
+                <label for="header_group">Header Code:</label>
+                <div class="header-inputs">
+                    <input type="text" id="header_group" name="header_group" placeholder="Group (e.g., 0008)" required>
+                    <input type="text" id="header_element" name="header_element" placeholder="Element (e.g., 0070)" required>
+                </div>
             </div>
             <div>
                 <label for="new_value">New value:</label>

@@ -23,7 +23,13 @@
         h1 {
             color: #2c3e50;
             text-align: center;
+            margin-bottom: 10px;
+        }
+        .about {
+            text-align: center;
             margin-bottom: 30px;
+            font-size: 0.9em;
+            color: #7f8c8d;
         }
         form div {
             margin-bottom: 20px;
@@ -73,6 +79,10 @@
 <body>
     <div class="container">
         <h1>Dicodit</h1>
+        <div class="about">
+            The first ever online DICOM header editing tool.
+            Quickly and easily modify DICOM headers right in your browser.
+        </div>
         <form method="POST" enctype="multipart/form-data">
             <div>
                 <label for="dicom_file">Select DICOM file:</label>
@@ -89,7 +99,7 @@
                 <label for="new_value">New value:</label>
                 <input type="text" id="new_value" name="new_value" placeholder="Enter new value" required>
             </div>
-            <button type="submit">Modify DICOM</button>
+            <button type="submit">Download updated DICOM</button>
         </form>
     </div>
 </body>

@@ -80,13 +80,14 @@
     <div class="container">
         <h1>Dicodit</h1>
         <div class="about">
-            The first ever online DICOM header editing tool.
+            The world's first online DICOM header editing tool. 
             Quickly and easily modify DICOM headers right in your browser.
+            Now supports batch processing with ZIP files!
         </div>
         <form method="POST" enctype="multipart/form-data">
             <div>
-                <label for="dicom_file">Select DICOM file:</label>
-                <input type="file" id="dicom_file" name="dicom_file" accept=".dcm" required>
+                <label for="dicom_file">Select DICOM file or ZIP file:</label>
+                <input type="file" id="dicom_file" name="dicom_file" accept=".dcm,.zip" required>
             </div>
             <div>
                 <label for="header_group">Header Code:</label>
@@ -99,7 +100,7 @@
                 <label for="new_value">New value:</label>
                 <input type="text" id="new_value" name="new_value" placeholder="Enter new value" required>
             </div>
-            <button type="submit">Download updated DICOM</button>
+            <button type="submit">Modify DICOM</button>
         </form>
     </div>
 </body>

@@ -7,25 +7,24 @@ import tempfile
 
 app = Flask(__name__)
 
-def modify_dicom(file_path, group, element, new_value):
+def modify_dicom(file_path, modifications):
     ds = pydicom.dcmread(file_path)
-    if (group, element) in ds:
-        ds[group, element].value = new_value
+    for group, element, new_value in modifications:
+        if (group, element) in ds:
+            ds[group, element].value = new_value
     ds.save_as(file_path)
 
-def process_zip(zip_path, group, element, new_value):
+def process_zip(zip_path, modifications):
     with tempfile.TemporaryDirectory() as tmpdirname:
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(tmpdirname)
         
-        # Process all DICOM files in the extracted directory, including nested folders
         for root, dirs, files in os.walk(tmpdirname):
             for filename in files:
                 if filename.lower().endswith('.dcm'):
                     file_path = os.path.join(root, filename)
-                    modify_dicom(file_path, group, element, new_value)
+                    modify_dicom(file_path, modifications)
         
-        # Create a new ZIP file with modified DICOM files
         output_zip = io.BytesIO()
         with zipfile.ZipFile(output_zip, 'w') as zipf:
             for root, dirs, files in os.walk(tmpdirname):
@@ -42,15 +41,20 @@ def process_zip(zip_path, group, element, new_value):
 def index():
     if request.method == 'POST':
         file = request.files['dicom_file']
-        group = int(request.form['header_group'], 16)
-        element = int(request.form['header_element'], 16)
-        new_value = request.form['new_value']
+        groups = request.form.getlist('header_group[]')
+        elements = request.form.getlist('header_element[]')
+        new_values = request.form.getlist('new_value[]')
+        
+        modifications = [
+            (int(group, 16), int(element, 16), new_value)
+            for group, element, new_value in zip(groups, elements, new_values)
+        ]
 
         if file.filename.lower().endswith('.zip'):
             with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as temp_zip:
                 file.save(temp_zip.name)
-                output_zip = process_zip(temp_zip.name, group, element, new_value)
-            os.unlink(temp_zip.name)  # Delete the temporary file
+                output_zip = process_zip(temp_zip.name, modifications)
+            os.unlink(temp_zip.name)
             return send_file(
                 output_zip,
                 as_attachment=True,
@@ -58,9 +62,9 @@ def index():
                 mimetype="application/zip"
             )
         else:
-            # Single DICOM file processing
             ds = pydicom.dcmread(file)
-            ds[group, element].value = new_value
+            for group, element, new_value in modifications:
+                ds[group, element].value = new_value
             modified_file = io.BytesIO()
             ds.save_as(modified_file)
             modified_file.seek(0)

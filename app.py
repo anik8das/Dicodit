@@ -9,9 +9,17 @@ app = Flask(__name__)
 
 def modify_dicom(file_path, modifications):
     ds = pydicom.dcmread(file_path)
-    for group, element, new_value in modifications:
-        if (group, element) in ds:
-            ds[group, element].value = new_value
+    for mod in modifications:
+        group, element, new_value = mod['group'], mod['element'], mod['value']
+        if mod['conditional']:
+            cond_group, cond_element, cond_value = mod['cond_group'], mod['cond_element'], mod['cond_value']
+            if (int(cond_group, 16), int(cond_element, 16)) in ds:
+                if str(ds[int(cond_group, 16), int(cond_element, 16)].value) == cond_value:
+                    if (int(group, 16), int(element, 16)) in ds:
+                        ds[int(group, 16), int(element, 16)].value = new_value
+        else:
+            if (int(group, 16), int(element, 16)) in ds:
+                ds[int(group, 16), int(element, 16)].value = new_value
     ds.save_as(file_path)
 
 def process_zip(zip_path, modifications):
@@ -44,11 +52,23 @@ def index():
         groups = request.form.getlist('header_group[]')
         elements = request.form.getlist('header_element[]')
         new_values = request.form.getlist('new_value[]')
+        conditionals = request.form.getlist('conditional[]')
+        cond_groups = request.form.getlist('cond_group[]')
+        cond_elements = request.form.getlist('cond_element[]')
+        cond_values = request.form.getlist('cond_value[]')
         
-        modifications = [
-            (int(group, 16), int(element, 16), new_value)
-            for group, element, new_value in zip(groups, elements, new_values)
-        ]
+        modifications = []
+        for i in range(len(groups)):
+            mod = {
+                'group': groups[i],
+                'element': elements[i],
+                'value': new_values[i],
+                'conditional': i < len(conditionals) and conditionals[i] == 'on',
+                'cond_group': cond_groups[i] if i < len(cond_groups) else None,
+                'cond_element': cond_elements[i] if i < len(cond_elements) else None,
+                'cond_value': cond_values[i] if i < len(cond_values) else None
+            }
+            modifications.append(mod)
 
         if file.filename.lower().endswith('.zip'):
             with tempfile.NamedTemporaryFile(delete=False, suffix='.zip') as temp_zip:
@@ -62,18 +82,15 @@ def index():
                 mimetype="application/zip"
             )
         else:
-            ds = pydicom.dcmread(file)
-            for group, element, new_value in modifications:
-                ds[group, element].value = new_value
-            modified_file = io.BytesIO()
-            ds.save_as(modified_file)
-            modified_file.seek(0)
-            return send_file(
-                modified_file,
-                as_attachment=True,
-                download_name="modified_dicom.dcm",
-                mimetype="application/dicom"
-            )
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.dcm') as temp_dcm:
+                file.save(temp_dcm.name)
+                modify_dicom(temp_dcm.name, modifications)
+                return send_file(
+                    temp_dcm.name,
+                    as_attachment=True,
+                    download_name="modified_dicom.dcm",
+                    mimetype="application/dicom"
+                )
     
     return render_template('index.html')
 

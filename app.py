@@ -11,15 +11,22 @@ def modify_dicom(file_path, modifications):
     ds = pydicom.dcmread(file_path)
     for mod in modifications:
         group, element, new_value = mod['group'], mod['element'], mod['value']
-        if mod['conditional']:
+        tag = (int(group, 16), int(element, 16))
+        
+        if mod['cond_group'] and mod['cond_element'] and mod['cond_value']:
             cond_group, cond_element, cond_value = mod['cond_group'], mod['cond_element'], mod['cond_value']
-            if (int(cond_group, 16), int(cond_element, 16)) in ds:
-                if str(ds[int(cond_group, 16), int(cond_element, 16)].value) == cond_value:
-                    if (int(group, 16), int(element, 16)) in ds:
-                        ds[int(group, 16), int(element, 16)].value = new_value
+            cond_tag = (int(cond_group, 16), int(cond_element, 16))
+            
+            if cond_tag in ds:
+                if str(ds[cond_tag].value).strip() == cond_value.strip():
+                    if tag in ds:
+                        print('making the edit');
+                        ds[tag].value = new_value
         else:
-            if (int(group, 16), int(element, 16)) in ds:
-                ds[int(group, 16), int(element, 16)].value = new_value
+            if tag in ds:
+                print('making the edit without checking condition');
+                ds[tag].value = new_value
+    
     ds.save_as(file_path)
 
 def process_zip(zip_path, modifications):
@@ -45,25 +52,26 @@ def process_zip(zip_path, modifications):
         output_zip.seek(0)
         return output_zip
 
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
+        print('aniket', request.files);
         file = request.files['dicom_file']
         groups = request.form.getlist('header_group[]')
         elements = request.form.getlist('header_element[]')
         new_values = request.form.getlist('new_value[]')
-        conditionals = request.form.getlist('conditional[]')
         cond_groups = request.form.getlist('cond_group[]')
         cond_elements = request.form.getlist('cond_element[]')
         cond_values = request.form.getlist('cond_value[]')
-        
+        print('aniket', cond_groups, cond_elements, cond_values);
+
         modifications = []
         for i in range(len(groups)):
             mod = {
                 'group': groups[i],
                 'element': elements[i],
                 'value': new_values[i],
-                'conditional': i < len(conditionals) and conditionals[i] == 'on',
                 'cond_group': cond_groups[i] if i < len(cond_groups) else None,
                 'cond_element': cond_elements[i] if i < len(cond_elements) else None,
                 'cond_value': cond_values[i] if i < len(cond_values) else None

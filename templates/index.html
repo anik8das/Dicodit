@@ -6,6 +6,7 @@
     <title>Dicodit - DICOM Header Editor</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -44,7 +45,7 @@
             border-radius: 8px;
         }
         input[type="text"], button {
-            width: 100%;
+            width: 90%;
             padding: 12px;
             margin-bottom: 15px;
             text-align: center;
@@ -62,6 +63,12 @@
         }
         button:hover {
             background-color: #2980b9;
+        }
+        .remove-modification-btn {
+            background-color: #df2d2d;
+        }
+        .remove-modification-btn:hover {
+            background-color: #b02c2c;
         }
         .modify-dicom-btn {
             background-color: #2ecc71;
@@ -127,6 +134,35 @@
             font-style: italic;
             margin-bottom: 8px;
         }
+        .info-icon {
+    color: #3498db;
+    margin-left: 5px;
+    cursor: help;
+}
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 300px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -150px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
     </style>
 </head>
 <body x-data="{ modifications: [{}], fileName: '' }">
@@ -157,7 +193,13 @@
                         <input type="text" x-model="mod.value" name="new_value[]" placeholder="New value">
                         <div>
                             <input type="checkbox" x-model="mod.conditional" :id="'conditional-' + index">
-                            <label :for="'conditional-' + index" class="checkbox-label">Conditional Edit</label>
+                            <label :for="'conditional-' + index" class="checkbox-label">
+                                Conditional Edit
+                                <span class="tooltip">
+                                    <i class="fas fa-info-circle info-icon"></i>
+                                    <span class="tooltiptext">Conditional Edit allows you to modify a value only if a certain condition is met. For example, you can change the Patient's Name only if the Patient ID matches a specific value.</span>
+                                </span>
+                            </label>
                         </div>
                         <div x-show="mod.conditional" class="conditional-section">
                             <div class="header-inputs">
@@ -166,7 +208,7 @@
                             </div>
                             <input type="text" x-model="mod.condValue" name="cond_value[]" placeholder="Condition Value">
                         </div>
-                        <button type="button" @click="modifications.splice(index, 1)">Remove Modification</button>
+                        <button type="button" class="remove-modification-btn" @click="modifications.splice(index, 1)">Remove Modification</button>
                     </div>
                 </template>
             </div>

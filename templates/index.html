@@ -3,149 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dicodit - DICOM Header Modifier</title>
+    <title>Dicodit - DICOM Header Editor</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Roboto', sans-serif;
             line-height: 1.6;
-            color: #333;
-            max-width: 600px;
-            margin: 0 auto;
             padding: 20px;
+            text-align: center;
+            color: #333;
             background-color: #f5f5f5;
         }
         .container {
-            background-color: white;
-            border-radius: 8px;
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
             padding: 30px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         h1 {
+            font-family: 'Lato', sans-serif;
+            font-size: 2.5em;
             color: #2c3e50;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .about {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 0.9em;
-            color: #7f8c8d;
-        }
-        form div {
             margin-bottom: 20px;
         }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #34495e;
+        .about {
+            background-color: #e6f3ff;
+            border-left: 5px solid #3498db;
+            padding: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 1.1em;
+            line-height: 1.4;
         }
-        input[type="file"],
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
+        form {
+            background-color: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+        }
+        input[type="text"], button {
+            width: 90%;
+            padding: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1em;
             border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        input[type="file"] {
-            padding: 7px;
-            height: 41px;
-        }
-        .header-inputs {
-            display: flex;
-            gap: 10px;
-        }
-        .header-inputs input {
-            width: calc(50% - 5px);
         }
         button {
             background-color: #3498db;
             color: white;
-            padding: 12px 20px;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
-            font-size: 16px;
-            width: 100%;
+            font-weight: bold;
             transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #2980b9;
         }
-        .modification-group {
-            margin-bottom: 10px;
+        .remove-modification-btn {
+            background-color: #df2d2d;
         }
-        .add-button, .remove-button {
+        .remove-modification-btn:hover {
+            background-color: #b02c2c;
+        }
+        .modify-dicom-btn {
             background-color: #2ecc71;
+        }
+        .modify-dicom-btn:hover {
+            background-color: #27ae60;
+        }
+        .modification-group {
+            background-color: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .header-inputs {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .header-inputs input {
+            width: 48%;
+        }
+        .conditional-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .checkbox-label {
+            display: inline-block;
+            font-weight: normal;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            background-color: #3498db;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 4px 7px;
             border-radius: 4px;
             cursor: pointer;
-            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+            margin-bottom: 8px;
         }
-        .add-button:hover, .remove-button:hover {
-            background-color: #2ecca2;
+        .file-input-wrapper:hover {
+            background-color: #2980b9;
         }
-        .remove-button {
-            background-color: #e74c3c;
-            margin-top: 10px;
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
         }
+        .file-name {
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        .info-icon {
+    color: #3498db;
+    margin-left: 5px;
+    cursor: help;
+}
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 300px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    margin-left: -150px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
     </style>
 </head>
-<body>
+<body x-data="{ modifications: [{}], fileName: '' }">
     <div class="container">
         <h1>Dicodit</h1>
+        
         <div class="about">
-            The world's first online DICOM header editing tool. 
-            Quickly and easily modify multiple DICOM headers right in your browser.
-            Supports batch processing with ZIP files and nested folders!
+            <p>The world's first online DICOM header editing tool. Quickly and easily modify multiple DICOM headers right in your browser. Supports batch processing with ZIP files and nested folders!</p>
         </div>
-        <form method="POST" enctype="multipart/form-data" id="dicomForm">
+
+        <form action="/" method="post" enctype="multipart/form-data">
             <div>
                 <label for="dicom_file">Select DICOM file or ZIP file:</label>
-                <input type="file" id="dicom_file" name="dicom_file" accept=".dcm,.zip" required>
-            </div>
-            <div id="modifications">
-                <div class="modification-group">
-                    <label>Header Code:</label>
-                    <div class="header-inputs">
-                        <input type="text" name="header_group[]" placeholder="Group (e.g., 0008)" required>
-                        <input type="text" name="header_element[]" placeholder="Element (e.g., 0070)" required>
-                    </div>
-                    <label>New value:</label>
-                    <input type="text" name="new_value[]" placeholder="Enter new value" required>
-                    <button type="button" class="remove-button" onclick="removeModification(this)" style="display:none;">- Remove Modification</button>
+                <div class="file-input-wrapper">
+                    Choose File
+                    <input type="file" name="dicom_file" id="dicom_file" required @change="fileName = $event.target.files[0].name">
                 </div>
+                <div x-show="fileName" x-text="fileName" class="file-name"></div>
             </div>
-            <button type="button" class="add-button" onclick="addModification()">+ Add Modification</button>
-            <button type="submit">Modify DICOM</button>
+
+            <div id="modifications">
+                <template x-for="(mod, index) in modifications" :key="index">
+                    <div class="modification-group">
+                        <div class="header-inputs">
+                            <input type="text" x-model="mod.group" name="header_group[]" placeholder="Group (hex)">
+                            <input type="text" x-model="mod.element" name="header_element[]" placeholder="Element (hex)">
+                        </div>
+                        <input type="text" x-model="mod.value" name="new_value[]" placeholder="New value">
+                        <div>
+                            <input type="checkbox" x-model="mod.conditional" :id="'conditional-' + index">
+                            <label :for="'conditional-' + index" class="checkbox-label">
+                                Conditional Edit
+                                <span class="tooltip">
+                                    <i class="fas fa-info-circle info-icon"></i>
+                                    <span class="tooltiptext">Conditional Edit allows you to modify a value only if a certain condition is met. For example, you can change the Patient's Name only if the Patient ID matches a specific value.</span>
+                                </span>
+                            </label>
+                        </div>
+                        <div x-show="mod.conditional" class="conditional-section">
+                            <div class="header-inputs">
+                                <input type="text" x-model="mod.condGroup" name="cond_group[]" placeholder="Condition Group (hex)">
+                                <input type="text" x-model="mod.condElement" name="cond_element[]" placeholder="Condition Element (hex)">
+                            </div>
+                            <input type="text" x-model="mod.condValue" name="cond_value[]" placeholder="Condition Value">
+                        </div>
+                        <button type="button" class="remove-modification-btn" @click="modifications.splice(index, 1)">Remove Modification</button>
+                    </div>
+                </template>
+            </div>
+
+            <button type="button" @click="modifications.push({})">+ Add Modification</button>
+
+            <button type="submit" class="modify-dicom-btn">Modify DICOM</button>
         </form>
     </div>
-
-    <script>
-        function addModification() {
-            const modificationsDiv = document.getElementById('modifications');
-            const newGroup = modificationsDiv.children[0].cloneNode(true);
-            newGroup.querySelectorAll('input').forEach(input => input.value = '');
-            newGroup.querySelector('.remove-button').style.display = 'inline-block';
-            modificationsDiv.appendChild(newGroup);
-            updateRemoveButtons();
-        }
-
-        function removeModification(button) {
-            button.parentElement.remove();
-            updateRemoveButtons();
-        }
-
-        function updateRemoveButtons() {
-            const removeButtons = document.querySelectorAll('.remove-button');
-            removeButtons.forEach((button, index) => {
-                button.style.display = index === 0 && removeButtons.length === 1 ? 'none' : 'inline-block';
-            });
-        }
-    </script>
 </body>
 </html>

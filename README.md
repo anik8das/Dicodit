@@ -32,8 +32,8 @@ Before you begin, ensure you have met the following requirements:
 1. Upload a DICOM file using the file picker.
 2. Enter the DICOM tag you want to modify (Group and Element).
 3. Enter the new value for the tag.
-4. Click "Modify DICOM" to process the file.
-5. Download the modified DICOM file.
+4. Check the conditional edit box if this edit only needs to applied to specific files
+5. Click "Modify DICOM" to process and download the file.
 
 ## Contributing
 Contributions to Dicodit are welcome. Please feel free to submit a Pull Request.

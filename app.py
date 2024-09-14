@@ -4,6 +4,7 @@ from pydicom.datadict import DicomDictionary
 import io
 import os
 import zipfile
+import tempfile
 
 app = Flask(__name__, static_folder='static')
 

@@ -59,14 +59,6 @@ Before you begin, ensure you have met the following requirements:
 
 Contributions to Dicodit are welcome. Please feel free to submit a Pull Request.
 
-## License
-
-This project is licensed under the [MIT License](LICENSE).
-
-## Support
-
-If you find Dicodit useful, consider supporting its development through the donation links provided in the application.
-
 ## Contact
 
 If you have any questions or feedback, please don't hesitate to contact me at aniketdas001@gmail.com

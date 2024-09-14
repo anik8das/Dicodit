@@ -1,6 +1,6 @@
 # Dicodit
 
-Dicodit is an advanced online DICOM header/metadata editing tool. It allows users to quickly and easily modify DICOM headers directly in their web browser, supporting both individual DICOM files and batch processing with ZIP files.
+Dicodit is an advanced online DICOM header/metadata editing tool. It allows users to quickly and easily modify DICOM headers directly in their web browser, supporting both individual DICOM files and batch processing with ZIP files. Check out the live version hosted [here](https://anik8das.pythonanywhere.com)
 
 ## Features
 

@@ -276,6 +276,13 @@
     </div>
 
     <script>
+        document.getElementById('dicom_file').addEventListener('change', function() {
+            const maxSize = 100 * 1024 * 1024; // 16 MB
+            if (this.files[0].size > maxSize) {
+                alert('File is too large. Maximum size is 16 MB.');
+                this.value = '';
+            }
+        });
         document.addEventListener('alpine:init', () => {
             Alpine.data('dicomApp', () => ({
                 modifications: [{}],

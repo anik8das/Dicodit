@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dicodit - DICOM Header Editor</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.js" defer></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicon.png') }}">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -135,37 +136,76 @@
             margin-bottom: 8px;
         }
         .info-icon {
-    color: #3498db;
-    margin-left: 5px;
-    cursor: help;
-}
-.tooltip {
-    position: relative;
-    display: inline-block;
-}
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 300px;
-    background-color: #555;
-    color: #fff;
-    text-align: center;
-    border-radius: 6px;
-    padding: 10px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -150px;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-.tooltip:hover .tooltiptext {
-    visibility: visible;
-    opacity: 1;
-}
+            color: #3498db;
+            margin-left: 5px;
+            cursor: help;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 300px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        #searchBar {
+            width: 70%;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .tag-search {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        .tag-search input {
+            width: 90%;
+            padding: 12px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .tag-search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            z-index: 10;
+        }
+        .tag-search-result {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .tag-search-result:hover {
+            background-color: #f0f0f0;
+        }
     </style>
 </head>
-<body x-data="{ modifications: [{}], fileName: '' }">
+<body x-data="dicomApp">
     <div class="container">
         <h1>Dicodit</h1>
         
@@ -186,9 +226,17 @@
             <div id="modifications">
                 <template x-for="(mod, index) in modifications" :key="index">
                     <div class="modification-group">
-                        <div class="header-inputs">
-                            <input type="text" x-model="mod.group" name="header_group[]" placeholder="Group (hex)">
-                            <input type="text" x-model="mod.element" name="header_element[]" placeholder="Element (hex)">
+                        <div class="tag-search">
+                            <input type="text" x-model="mod.tagSearch" @input="searchTags(index)" placeholder="Search DICOM tag to edit">
+                            <input type="hidden" x-model="mod.group" :name="'header_group[]'">
+                            <input type="hidden" x-model="mod.element" :name="'header_element[]'">
+                            <div class="tag-search-results" x-show="mod.searchResults && mod.searchResults.length > 0">
+                                <template x-for="result in mod.searchResults" :key="result.id">
+                                    <div class="tag-search-result" @click="selectTag(index, result)">
+                                        <span x-text="`${result.name} (${result.id})`"></span>
+                                    </div>
+                                </template>
+                            </div>
                         </div>
                         <input type="text" x-model="mod.value" name="new_value[]" placeholder="New value">
                         <div>
@@ -202,9 +250,17 @@
                             </label>
                         </div>
                         <div x-show="mod.conditional" class="conditional-section">
-                            <div class="header-inputs">
-                                <input type="text" x-model="mod.condGroup" name="cond_group[]" placeholder="Condition Group (hex)">
-                                <input type="text" x-model="mod.condElement" name="cond_element[]" placeholder="Condition Element (hex)">
+                            <div class="tag-search">
+                                <input type="text" x-model="mod.condTagSearch" @input="searchCondTags(index)" placeholder="Search condition DICOM tag">
+                                <input type="hidden" x-model="mod.condGroup" :name="'cond_group[]'">
+                                <input type="hidden" x-model="mod.condElement" :name="'cond_element[]'">
+                                <div class="tag-search-results" x-show="mod.condSearchResults && mod.condSearchResults.length > 0">
+                                    <template x-for="result in mod.condSearchResults" :key="result.id">
+                                        <div class="tag-search-result" @click="selectCondTag(index, result)">
+                                            <span x-text="`${result.name} (${result.id})`"></span>
+                                        </div>
+                                    </template>
+                                </div>
                             </div>
                             <input type="text" x-model="mod.condValue" name="cond_value[]" placeholder="Condition Value">
                         </div>
@@ -218,5 +274,64 @@
             <button type="submit" class="modify-dicom-btn">Modify DICOM</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('dicomApp', () => ({
+                modifications: [{}],
+                fileName: '',
+                allHeaders: [],
+
+                init() {
+                    this.fetchDicomHeaders();
+                },
+
+                async fetchDicomHeaders() {
+                    try {
+                        const response = await fetch('/get_dicom_headers');
+                        if (response.ok) {
+                            this.allHeaders = await response.json();
+                        } else {
+                            console.error('Failed to fetch DICOM headers');
+                        }
+                    } catch (error) {
+                        console.error('Error fetching DICOM headers:', error);
+                    }
+                },
+
+                searchTags(index) {
+                    const searchTerm = this.modifications[index].tagSearch.toLowerCase();
+                    this.modifications[index].searchResults = this.allHeaders.filter(header => 
+                        header.name.toLowerCase().includes(searchTerm) || 
+                        header.id.toLowerCase().includes(searchTerm)
+                    ).slice(0, 10);  // Limit to 10 results for performance
+                },
+
+                selectTag(index, result) {
+                    const [group, element] = result.id.slice(1, -1).split(',');
+                    this.modifications[index].group = group;
+                    this.modifications[index].element = element;
+                    this.modifications[index].tagSearch = `${result.name} (${result.id})`;
+                    this.modifications[index].searchResults = [];
+                },
+
+                searchCondTags(index) {
+                    const searchTerm = this.modifications[index].condTagSearch.toLowerCase();
+                    this.modifications[index].condSearchResults = this.allHeaders.filter(header => 
+                        header.name.toLowerCase().includes(searchTerm) || 
+                        header.id.toLowerCase().includes(searchTerm)
+                    ).slice(0, 10);  // Limit to 10 results for performance
+                },
+
+                selectCondTag(index, result) {
+                    const [group, element] = result.id.slice(1, -1).split(',');
+                    this.modifications[index].condGroup = group;
+                    this.modifications[index].condElement = element;
+                    this.modifications[index].condTagSearch = `${result.name} (${result.id})`;
+                    this.modifications[index].condSearchResults = [];
+                }
+            }))
+        })
+    </script>
 </body>
 </html>

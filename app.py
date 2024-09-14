@@ -1,11 +1,19 @@
-from flask import Flask, render_template, request, send_file
+from flask import Flask, render_template, request, send_file, jsonify, url_for
 import pydicom
+from pydicom.datadict import DicomDictionary
 import io
 import os
 import zipfile
-import tempfile
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
+
+def get_dicom_headers():
+    headers = []
+    for tag, properties in DicomDictionary.items():
+        name = properties[2]  # The name is the third item in the properties tuple
+        header_id = f"({tag >> 16:04X},{tag & 0xFFFF:04X})"  # Format tag as (gggg,eeee)
+        headers.append({"id": header_id, "name": name})
+    return headers
 
 def modify_dicom(file_path, modifications):
     ds = pydicom.dcmread(file_path)
@@ -20,11 +28,11 @@ def modify_dicom(file_path, modifications):
             if cond_tag in ds:
                 if str(ds[cond_tag].value).strip() == cond_value.strip():
                     if tag in ds:
-                        print('making the edit');
+                        print(f'Making conditional edit: {tag}')
                         ds[tag].value = new_value
         else:
             if tag in ds:
-                print('making the edit without checking condition');
+                print(f'Making edit: {tag}')
                 ds[tag].value = new_value
     
     ds.save_as(file_path)
@@ -52,11 +60,9 @@ def process_zip(zip_path, modifications):
         output_zip.seek(0)
         return output_zip
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        print('aniket', request.files);
         file = request.files['dicom_file']
         groups = request.form.getlist('header_group[]')
         elements = request.form.getlist('header_element[]')
@@ -64,7 +70,6 @@ def index():
         cond_groups = request.form.getlist('cond_group[]')
         cond_elements = request.form.getlist('cond_element[]')
         cond_values = request.form.getlist('cond_value[]')
-        print('aniket', cond_groups, cond_elements, cond_values);
 
         modifications = []
         for i in range(len(groups)):
@@ -101,6 +106,11 @@ def index():
                 )
     
     return render_template('index.html')
+
+@app.route('/get_dicom_headers', methods=['GET'])
+def dicom_headers():
+    headers = get_dicom_headers()
+    return jsonify(headers)
 
 if __name__ == '__main__':
     app.run(debug=True)

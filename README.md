@@ -1,5 +1,5 @@
 # Dicodit
-Dicodit is the world's first online DICOM header editing tool. It allows users to quickly and easily modify DICOM headers directly in their web browser.
+Dicodit is the world's first online DICOM header/metadata editing tool. It allows users to quickly and easily modify DICOM headers directly in their web browser, including conditional edits!
 
 ## Features
 - Upload DICOM files

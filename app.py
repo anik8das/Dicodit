@@ -1,12 +1,11 @@
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file, jsonify, url_for
 import pydicom
 from pydicom.datadict import DicomDictionary
 import io
 import os
 import zipfile
-import tempfile
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 
 def get_dicom_headers():
     headers = []
@@ -29,11 +28,11 @@ def modify_dicom(file_path, modifications):
             if cond_tag in ds:
                 if str(ds[cond_tag].value).strip() == cond_value.strip():
                     if tag in ds:
-                        print('making the edit');
+                        print(f'Making conditional edit: {tag}')
                         ds[tag].value = new_value
         else:
             if tag in ds:
-                print('making the edit without checking condition');
+                print(f'Making edit: {tag}')
                 ds[tag].value = new_value
     
     ds.save_as(file_path)
@@ -60,7 +59,6 @@ def process_zip(zip_path, modifications):
         
         output_zip.seek(0)
         return output_zip
-
 
 @app.route('/', methods=['GET', 'POST'])
 def index():

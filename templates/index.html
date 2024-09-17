@@ -203,6 +203,20 @@
         .tag-search-result:hover {
             background-color: #f0f0f0;
         }
+        .open-source-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        .open-source-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+        .open-source-link i {
+            font-size: 0.8em;
+            margin-left: 3px;
+        }
     </style>
 </head>
 <body x-data="dicomApp">
@@ -210,7 +224,7 @@
         <h1>Dicodit</h1>
         
         <div class="about">
-            <p>The most advanced online DICOM header editing tool. Quickly and easily modify multiple DICOM headers right in your browser. Supports batch processing with ZIP files and conditional edits now!</p>
+            <p>The most advanced online DICOM header editing tool. Quickly and easily modify multiple DICOM headers right in your browser. Supports batch processing with ZIP files and conditional edits now! Your dicom files are not stored on our server. Additionally, Dicodit is <a href="https://github.com/anik8das/Dicodit" target="_blank" class="open-source-link">fully open-source!<i class="fas fa-external-link-alt"></i></a></p>
         </div>
 
         <form action="/" method="post" enctype="multipart/form-data">
